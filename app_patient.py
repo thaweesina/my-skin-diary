@@ -138,7 +138,7 @@ if not st.session_state['logged_in']:
                     c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (new_user, hash_password(new_password)))
                     conn.commit()
                     st.success("🎉 สมัครสมาชิกสำเร็จ! กรุณาสลับไปที่หน้า 'เข้าสู่ระบบ' เพื่อใช้งาน")
-                except sqlite3.integrityError:
+                except sqlite3.IntegrityError:
                     st.error("❌ ชื่อผู้ใช้นี้มีอยู่ในระบบแล้ว กรุณาใช้ชื่ออื่น")
                 finally:
                     conn.close()
