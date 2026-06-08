@@ -24,7 +24,7 @@ if not os.path.exists("my_skin_history"):
     os.makedirs("my_skin_history")
 
 def init_patient_db():
-    conn = sqlite3.connect("skindiary_v2.db")
+    conn = sqlite3.connect("skindiary_v3.db")
     c = conn.cursor()
     # สร้างตารางผู้ใช้
     c.execute('''
@@ -150,7 +150,7 @@ if not st.session_state['logged_in']:
         password = st.text_input("รหัสผ่าน (Password)", type="password", key="login_pass")
         
         if st.button("🔑 เข้าสู่ระบบ"):
-            conn = sqlite3.connect("skindiary_v2.db")
+            conn = sqlite3.connect("skindiary_v3.db")
             c = conn.cursor()
             c.execute("SELECT user_id, password FROM users WHERE username = ?", (username,))
             result = c.fetchone()
@@ -237,7 +237,7 @@ else:
                     img_to_save = cv2.cvtColor(processed_img, cv2.COLOR_RGB2BGR)
                     cv2.imwrite(saved_image_path, img_to_save)
                     
-                    conn = sqlite3.connect("skindiary_v2.db")
+                    conn = sqlite3.connect("skindiary_v3.db")
                     c = conn.cursor()
                     
                     # ค้นหาประวัติเฉพาะของ user ปัจจุบัน ในวันนี้
