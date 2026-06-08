@@ -18,7 +18,7 @@ def hash_password(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
 
 # ---------------------------------------------------------
-# 1. เตรียมระบบฐานข้อมูล (เพิ่มระบบสมาชิก)
+# 1. เตรียมระบบฐานข้อมูล (เชื่อมต่อ skindiary_v3.db ทุกจุด ✅)
 # ---------------------------------------------------------
 if not os.path.exists("my_skin_history"):
     os.makedirs("my_skin_history")
@@ -109,7 +109,6 @@ def evaluate_severity(count):
     else:
         return "ระดับ 5: สิวรุนแรงมาก (ควรพบแพทย์)", "💀"
 
-
 # =========================================================
 # หน้ากากระบบความปลอดภัย (ถ้ายังไม่ Login ให้แสดงหน้านี้ก่อน)
 # =========================================================
@@ -132,13 +131,13 @@ if not st.session_state['logged_in']:
             elif new_password != confirm_password:
                 st.error("รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน")
             else:
-                conn = sqlite3.connect("skindiary_v2.db")
+                conn = sqlite3.connect("skindiary_v3.db")  # แก้ไขเป็น v3 แล้ว ✅
                 c = conn.cursor()
                 try:
                     c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (new_user, hash_password(new_password)))
                     conn.commit()
                     st.success("🎉 สมัครสมาชิกสำเร็จ! กรุณาสลับไปที่หน้า 'เข้าสู่ระบบ' เพื่อใช้งาน")
-                except sqlite3.IntegrityError:
+                except sqlite3.IntegrityError:  # แก้ไข I พิมพ์ใหญ่แล้ว ✅
                     st.error("❌ ชื่อผู้ใช้นี้มีอยู่ในระบบแล้ว กรุณาใช้ชื่ออื่น")
                 finally:
                     conn.close()
@@ -150,7 +149,7 @@ if not st.session_state['logged_in']:
         password = st.text_input("รหัสผ่าน (Password)", type="password", key="login_pass")
         
         if st.button("🔑 เข้าสู่ระบบ"):
-            conn = sqlite3.connect("skindiary_v3.db")
+            conn = sqlite3.connect("skindiary_v3.db")  # แก้ไขเป็น v3 แล้ว ✅
             c = conn.cursor()
             c.execute("SELECT user_id, password FROM users WHERE username = ?", (username,))
             result = c.fetchone()
@@ -161,7 +160,7 @@ if not st.session_state['logged_in']:
                 st.session_state['user_id'] = result[0]
                 st.session_state['username'] = username
                 st.success(f"ยินดีต้อนรับคุณ {username} เข้าสู่ระบบ!")
-                st.rerun()  # สั่งรีเฟรชหน้าเว็บเพื่อเข้าแอปพลิเคชัน
+                st.rerun()
             else:
                 st.error("❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง")
 
@@ -169,7 +168,6 @@ if not st.session_state['logged_in']:
 # หน้าต่างหลักของแอป (จะทำงานหลังจากที่ Login แล้วเท่านั้น)
 # =========================================================
 else:
-    # เมนูด้านซ้าย (Sidebar) พร้อมปุ่ม Logout
     st.sidebar.title("✨ My Skin Diary")
     st.sidebar.write(f"ผู้ใช้งานปัจจุบัน: **{st.session_state['username']}**")
     
@@ -184,9 +182,6 @@ else:
 
     current_user_id = st.session_state['user_id']
 
-    # ---------------------------------------------------------
-    # หน้าที่ 1: สแกนผิวและบันทึกประจำวัน
-    # ---------------------------------------------------------
     if menu == "📸 สแกนผิววันนี้":
         st.title("📸 ตรวจเช็กและบันทึกสภาพผิวประจำวัน")
         st.write("ถ่ายรูปใบหน้าเพื่อประเมินความเปลี่ยนแปลงของสิวในแต่ละวัน")
@@ -232,15 +227,13 @@ else:
                 
                 if submitted:
                     today_str = datetime.date.today().strftime("%Y-%m-%d")
-                    # แยกโฟลเดอร์เก็บตาม user_id ป้องกันภาพซ้ำ
                     saved_image_path = f"my_skin_history/skin_{current_user_id}_{today_str}.jpg"
                     img_to_save = cv2.cvtColor(processed_img, cv2.COLOR_RGB2BGR)
                     cv2.imwrite(saved_image_path, img_to_save)
                     
-                    conn = sqlite3.connect("skindiary_v3.db")
+                    conn = sqlite3.connect("skindiary_v3.db")  # เป็น v3 แล้ว ✅
                     c = conn.cursor()
                     
-                    # ค้นหาประวัติเฉพาะของ user ปัจจุบัน ในวันนี้
                     c.execute("SELECT record_id FROM daily_records WHERE user_id = ? AND log_date = CURRENT_DATE", (current_user_id,))
                     existing = c.fetchone()
                     
@@ -258,15 +251,11 @@ else:
                     conn.close()
                     st.success("🎉 บันทึกไดอารี่ผิวของวันนี้เรียบร้อยแล้ว! ไปดูพัฒนาการที่หน้าเมนูด้านซ้ายได้เลย")
 
-    # ---------------------------------------------------------
-    # หน้าที่ 2: หน้าติดตามพัฒนาการ (คัดกรองเฉพาะข้อมูลผู้ใช้ที่ล็อกอิน)
-    # ---------------------------------------------------------
     elif menu == "📈 ติดตามพัฒนาการผิว":
         st.title("📈 พัฒนาการและแนวโน้มสภาพผิว")
         st.write("ดูสถิติการเปลี่ยนแปลงเพื่อประเมินว่าสกินแคร์ที่ใช้ได้ผลจริงหรือไม่")
         
-        conn = sqlite3.connect("skindiary_v2.db")
-        # ดึงข้อมูลเฉพาะของคนไข้ที่กําลัง Login เท่านั้น (WHERE user_id = ?) 🔒
+        conn = sqlite3.connect("skindiary_v3.db")  # เป็น v3 แล้ว ✅
         df = pd.read_sql_query("SELECT log_date AS 'วันที่', acne_count AS 'จำนวนสิว', severity_level AS 'ระดับ', skincare_used AS 'สกินแคร์ที่ใช้', daily_note AS 'บันทึกช่วยจำ', image_path FROM daily_records WHERE user_id = ? ORDER BY log_date ASC", conn, params=(current_user_id,))
         conn.close()
         
