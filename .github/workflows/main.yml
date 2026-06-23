@@ -1,0 +1,12 @@
+name: Keep Streamlit Alive
+
+on:
+  schedule:
+    - cron: '0 */2 * * *' # ทำงานทุกๆ 2 ชั่วโมง
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Ping Streamlit App
+      run: curl -I https://my-skin-diary.streamlit.app/
